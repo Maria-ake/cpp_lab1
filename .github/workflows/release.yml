@@ -1,0 +1,37 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ "main", "master", "feature/github_actions" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+# Даем права на запись для создания релизов (как указано в пособии)
+permissions: write-all
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Сборка для двух разных ОС (требование лабы)
+        os: [ubuntu-latest, windows-latest] 
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: hello-world-${{ matrix.os }}
+        path: |
+          ${{github.workspace}}/build/Release/hello_world.exe
+          ${{github.workspace}}/build/hello_world
